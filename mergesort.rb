@@ -1,5 +1,5 @@
 module MergeSort
-	def sort(comparator = DefaultComparator.new(), timeout = 1000)
+	def sort(timeout = 1000, &comparator)
 	end
 
 	def psort(astart, aend, bstart, bend, p, r, comparator)
