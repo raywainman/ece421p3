@@ -7,23 +7,26 @@ class Assignment3
   def initialize(x) 
     @collection = []
     
-    for i in 0..x do       
+    for i in 3..x do       
      @collection.clear()                
       for j in 0..i do
         @collection << (1 + rand(1000000)).to_i
           end
     
-        control = self.dup  
-        puts self.to_s
+        control = self.clone  
+
         self.sort!() { |i, j| i <=> j  }
          
-        control.sort(){ i <=> j }
+        control = control.sort(){ |i, j| i <=> j }
+          
+        puts "mysort: " + self.to_a.to_s
+        puts "sort: " + control.to_a.to_s
           
         if(control.to_a != self.to_a)
           raise "Sort Doesn't match default sort alg."
         end
           
-       puts self.to_s
+
      end   
 
   end
@@ -41,6 +44,10 @@ class Assignment3
     @collection.length
   end
   
+  def clone
+    @collection.clone
+  end
+  
   def each(*args, &block)
     @collection.each(*args) do |i|
       block.call(i)
@@ -55,4 +62,4 @@ class Assignment3
   
 end
 
-Assignment3.new(25)
+Assignment3.new(1000)

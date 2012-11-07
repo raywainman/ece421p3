@@ -44,17 +44,19 @@ module MergeSort
       collection_end, collection_start, collection_end, &comparator)
     end
 
-    post_psort(collection_start, collection_end, &comparator)
+    post_psort(self, collection_start, collection_end, &comparator)
   end
 
   def binary_search(a, b, center, &comparator)
     pre_binary_search(a, b, center, &comparator)
     min = 0
-    max = b.length-1
-
+    max = b.length-2
+    
+    result = @@NO_POSITION_FOUND
+    
     if(b.length == 1)
       result = @@NO_POSITION_FOUND
-      max = -1
+      max = min - 1     
     end
 
     while (max >= min)
@@ -66,9 +68,9 @@ module MergeSort
         break;
       end
 
-      if(b[mid] > center)
+      if(comparator.call(b[mid],center) == 1)
         min = mid + 1;
-      elsif (b[mid+1] < center)
+      elsif (comparator.call(b[mid+1],center)==-1)
         max = mid - 1;
       else
         result = mid;
@@ -76,39 +78,39 @@ module MergeSort
       end
     end
 
-    result = @@NO_POSITION_FOUND
-
     post_binary_search(a, b, center, result)
     result
   end
 
-  def merge(left, right, p, r, &comparator)
-    pre_merge(left, right, p, r, &comparator)
-
+  def merge(collection, left, right, p, r, &comparator)
+    pre_merge(collection, left, right, p, r, &comparator)
+    
     (p..r).each() do |i|
 
       if(left.length == 0)
         a = right.shift
-        self[i] = a
+        collection[i] = a
         next
       elsif(right.length==0)
         a = left.shift
-        self[i] = a
+      collection[i] = a
         next
       else
 
-        if left[0] < right[0]
+        compare = comparator.call(left[0],right[0])
+        if compare == -1
           a = left.shift
-        elsif(right[0] <= left[0])
+        elsif(compare >= 0)
           a = right.shift
         end
 
-        self[i] = a
+        collection[i] = a
 
       end
 
     end
-    post_merge(left, right, p, r, &comparator)
+    
+    post_merge(collection, left, right, p, r, &comparator)
   end
 
   def pmerge(collection, a_start, a_end, b_start, b_end, p, r, &comparator)
@@ -136,7 +138,8 @@ module MergeSort
         collection[p] = a_col[0]
       end
     elsif(l == 0)
-      if(a_col[0] <= b_col[0])
+      compare = comparator.call(a_col[0], b_col[0])
+      if(compare <= 0)
         @lock.synchronize do
           collection[p] = a_col[0]
           collection[r] = b_col[0]
@@ -150,28 +153,30 @@ module MergeSort
     else
       a_mid = (l/2).floor
 
+      position = @@NO_POSITION_FOUND
+      @lock.synchronize do
       position = binary_search(a_col, b_col, a_col[a_mid], &comparator)
-
+end
       if(position == @@NO_POSITION_FOUND)
-        merge(a_col, b_col, p, r, &comparator)
+        merge(collection, a_col, b_col, p, r, &comparator)
         return
       end
 
       lastpos = (a_mid) + (position) + 1
-
-      collection2 = collection.dup
+      
+      collection2 = collection.clone
       left = Thread.new do
         pmerge(collection2, a_start, a_start+a_mid, b_start, b_start+position, p, p+lastpos, &comparator)
       end
 
-      collection3 = collection.dup
+      collection3 = collection.clone
       right = Thread.new do
         pmerge(collection3, a_start+a_mid+1, a_end, b_start+position + 1, b_end, p+ lastpos + 1, r, &comparator)
       end
 
       left.join()
       right.join()
-
+      
       #Ugly hack to sync up dup collections to main one
       (p..p+ lastpos).each() do |i|
         collection[i] = collection2[i]
@@ -180,8 +185,10 @@ module MergeSort
       (p+ lastpos + 1..r).each() do |i|
         collection[i] = collection3[i]
       end
+      
 
     end
+    
     post_pmerge(collection, a_start, a_end, b_start, b_end, p, r, &comparator)
   end
 

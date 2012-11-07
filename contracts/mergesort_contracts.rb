@@ -58,6 +58,10 @@ module MergesortContracts
   end
 
   def check_collection(collection)
+    
+    
+    assert(!collection.nil?,"Collection cannot be nil")
+    assert(collection.respond_to?("clone"), "Object including mergesort module must respond to clone")
     assert(collection.respond_to?("[]"), "Object including mergesort module must respond to []")
     assert(collection.respond_to?("[]="), "Object including mergesort module must respond to []=")
     assert(collection.respond_to?("length"), "Object including mergesort module must respond to length")
@@ -74,15 +78,24 @@ module MergesortContracts
   end
 
   def post_sort!(timeout, &comparator)
+    
+    #checking sort is consistent
+    last_element = self.length - 1
+    
+    expected_sort = comparator.call(self[0], self[last_element]) 
+    
     self.each_with_index() do |item, index|
       
-      if(index < self.length - 1)
+      if(index < last_element)
         current_val = self[index]
         next_val = self[index+1]
+        
+      comparision = comparator.call(current_val, next_val)
+      assert(comparision == expected_sort || comparision==0, "Invalid sorting detected.")
+        
       end
 
-      comparision = comparator.call(current_val, next_val)
-      assert(comparision <= 0, "Invalid sorting detected.")
+      
     end
   end
 
@@ -92,11 +105,11 @@ module MergesortContracts
     common_subcollection_b(b_start, b_end)
     common_subcollection(p, r)
 
-    assert(a_start >= p)
-    assert(b_start >= p)
+   # assert(a_start >= p, "Sub collection a must be within the range for the original collection")
+    #assert(b_start >= p, "Sub collection b must be within the range for the original collection")
 
-    assert(a_end <= r)
-    assert(b_end <= r)
+    #assert(a_end <= r,"Sub collection a must be within the range for the original collection")
+    #assert(b_end <= r, "Sub collection b must be within the range for the original collection")
     
     #no overlap -  e1 <= s2 or e2 <= s1
     assert(a_end <= b_start || b_end <= a_start, "No Overlap allowed between sub collections a & b")
@@ -124,14 +137,22 @@ module MergesortContracts
     assert(p >= 0, "Index for start of sub collection must be greater than 0")
   end
 
-  def check_order(p, r, &comparator)
+  def check_order(collection, p, r, &comparator)
 
+    #checking sort is consistent
+    expected_sort = comparator.call(collection[p], collection[r]) 
+    
     (p..r-1).each() do |i|
-      current_val = self[i]
-      next_val = self[i+1]
+      current_val = collection[i]
+      next_val = collection[i+1]
 
       comparision = comparator.call(current_val, next_val)
-      assert(comparision <= 0, "Invalid sorting detected.")
+      
+      if(comparision != expected_sort)
+        puts "Boom: "+collection[p..r].to_s
+      end
+      
+      assert(comparision == expected_sort || comparision==0, "Invalid sorting detected.")
 
     end
   end
@@ -141,8 +162,8 @@ module MergesortContracts
     common_subcollection(p, r)
   end
 
-  def post_psort(p, r, &comparator)
-    check_order(p, r, &comparator)
+  def post_psort(collection, p, r, &comparator)
+    check_order(collection, p, r, &comparator)
   end
 
   def pre_binary_search(a, b, center, &comparator)
@@ -158,18 +179,19 @@ module MergesortContracts
     assert(result == -1 || (result >= 0 and result <= b.length - 2), "Invalid Binary Result Detected")
   end
 
-  def pre_merge(left, right, p, r, &comparator)
+  def pre_merge(collection,left, right, p, r, &comparator)
     check_comparator(&comparator)
     common_subcollection(p, r)
 
+    check_collection(collection)
     check_collection(left)
     check_collection(right)
     
     assert((left.length + right.length) == (r-p+1), "Left #{left.length} and right #{right.length} subcollections must equal size of total collection #{p+r+1}")
   end
 
-  def post_merge(left, right, p, r, &comparator)
-    check_order(p, r, &comparator)
+  def post_merge(collection, left, right, p, r, &comparator)
+    check_order(collection, p, r, &comparator)
   end
 
   def pre_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
@@ -179,7 +201,7 @@ module MergesortContracts
   end
 
   def post_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
-    check_order(p, r, &comparator)
+    check_order(collection, p, r, &comparator)
   end
   
   #Contracts for the normal merge sort. To be used when threaded merge fails.
