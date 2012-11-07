@@ -1,6 +1,6 @@
 require 'test/unit'
 
-module Mergesort_contracts
+module MergesortContracts
 
   include Test::Unit::Assertions
   def check_timeout(timeout)
@@ -30,11 +30,11 @@ module Mergesort_contracts
 
   def check_comparator(&comparator)
 
-    assert(block_given?, "Timeout cannot be a nil value")
+    assert(block_given?, "Comparator block must be provided")
     assert(comparator.arity == 2, "Provided comparision block must take two parameters")
 
     if(self.length > 0)
-      test_value = self[0]
+      a = self[0]
       check_comparator_values(a, a, &comparator)
     end
 
@@ -58,62 +58,65 @@ module Mergesort_contracts
   end
 
   def check_collection(collection)
-    assert(collection.respond_to?("[]"))
-    assert(collection.respond_to?("[]="))
-    assert(collection.respond_to?("length"))
-    assert(collection.respond_to?("slice"))
-    assert(collection.respond_to?("each"))
-    assert(collection.respond_to?("each_index"))
+    assert(collection.respond_to?("[]"), "Object including mergesort module must respond to []")
+    assert(collection.respond_to?("[]="), "Object including mergesort module must respond to []=")
+    assert(collection.respond_to?("length"), "Object including mergesort module must respond to length")
+    assert(collection.respond_to?("each"), "Object including mergesort module must respond to each")
+    assert(collection.respond_to?("each_index"), "Object including mergesort module must respond to each_index")
   end
 
-  def pre_sort(comparator, timeout)
+  def pre_sort!(timeout, &comparator)
 
     check_collection(self)
     check_timeout(timeout)
-    check_comparator(comparator)
+    check_comparator(&comparator)
 
   end
 
-  def post_sort(comparator, timeout)
-    self.each_index() do |i|
-      current_val = self[i]
-      next_val = self[i+1]
+  def post_sort!(timeout, &comparator)
+    self.each_with_index() do |item, index|
+      
+      if(index < self.length - 1)
+        current_val = self[index]
+        next_val = self[index+1]
+      end
 
       comparision = comparator.call(current_val, next_val)
-      assert(comparision > 0, "Invalid sorting detected.")
+      assert(comparision <= 0, "Invalid sorting detected.")
     end
   end
 
-  def common_conditions(astart, aend, bstart, bend, p, r)
+  def common_conditions(a_start, a_end, b_start, b_end, p, r)
 
-    common_subcollection_a(astart, aend)
-    common_subcollection_b(bstart, bend)
+    common_subcollection_a(a_start, a_end)
+    common_subcollection_b(b_start, b_end)
     common_subcollection(p, r)
 
-    assert(astart >= p)
-    assert(bstart >= p)
+    assert(a_start >= p)
+    assert(b_start >= p)
 
-    assert(aend <= r)
-    assert(bend <= r)
+    assert(a_end <= r)
+    assert(b_end <= r)
+    
+    #no overlap -  e1 <= s2 or e2 <= s1
+    assert(a_end <= b_start || b_end <= a_start, "No Overlap allowed between sub collections a & b")
+    
 
-    #no overlap
-    assert(bend < astart && aend < bstart)
-
-    a_length = astart + aend + 1
-    b_length = bstart + bend + 1
+    a_length = a_start + a_end + 1
+    b_length = b_start + b_end + 1
     collection_length = r + p + 1
 
     assert(a_length + b_length != collection_length, "Merge of length a & length b requires collection to have length a + b")
   end
 
-  def common_subcollection_a(astart, aend)
+  def common_subcollection_a(a_start, a_end)
     assert(a_start <= a_end, "SubCollection A: end index larger than start index")
-    assert(astart >= 0, "Index for start of sub collection a must be greater than 0")
+    assert(a_start >= 0, "Index for start of sub collection a must be greater than 0")
   end
 
-  def common_subcollection_b(bstart, bend)
-    assert(bstart <= b_end, "SubCollection B: end index larger than start index")
-    assert(bstart >= 0, "Index for start of sub collection b must be greater than 0")
+  def common_subcollection_b(b_start, b_end)
+    assert(b_start <= b_end, "SubCollection B: end index larger than start index")
+    assert(b_start >= 0, "Index for start of sub collection b must be greater than 0")
   end
 
   def common_subcollection(p, r)
@@ -121,63 +124,62 @@ module Mergesort_contracts
     assert(p >= 0, "Index for start of sub collection must be greater than 0")
   end
 
-  def check_order(p, r, comparator)
+  def check_order(p, r, &comparator)
 
     (p..r-1).each() do |i|
       current_val = self[i]
       next_val = self[i+1]
 
       comparision = comparator.call(current_val, next_val)
-      assert(comparision > 0, "Invalid sorting detected.")
+      assert(comparision <= 0, "Invalid sorting detected.")
 
     end
   end
 
-  def pre_psort(astart, aend, bstart, bend, p, r, comparator)
-    check_comparator(comparator)
-    common_conditions(astart, aend, bstart, bend, p, r)
+  def pre_psort(p, r, &comparator)
+    check_comparator(&comparator)
+    common_subcollection(p, r)
   end
 
-  def post_psort(p, r, comparator)
-    check_order(p, r, comparator)
+  def post_psort(p, r, &comparator)
+    check_order(p, r, &comparator)
   end
 
-  def pre_binary_search(a, b, center, comparator)
-    check_comparator(comparator)
+  def pre_binary_search(a, b, center, &comparator)
+    check_comparator(&comparator)
 
     check_collection(b)
 
     assert(!center.nil?)
-
-    check_comparator(comparator)
   end
 
   def post_binary_search(a, b, center, result)
     assert(!result.nil?)
-    assert(result == -1 || (result >= 0 and result <= b.length - 2))
+    assert(result == -1 || (result >= 0 and result <= b.length - 2), "Invalid Binary Result Detected")
   end
 
-  def pre_merge(left, right, p, r, comparator)
-    check_comparator(comparator)
+  def pre_merge(left, right, p, r, &comparator)
+    check_comparator(&comparator)
     common_subcollection(p, r)
 
     check_collection(left)
     check_collection(right)
-
-    assert(left.length + right.length == (p+r+1))
+    
+    assert((left.length + right.length) == (r-p+1), "Left #{left.length} and right #{right.length} subcollections must equal size of total collection #{p+r+1}")
   end
 
-  def post_merge(left, right, p, r, comparator)
-    check_order(p, r, comparator)
+  def post_merge(left, right, p, r, &comparator)
+    check_order(p, r, &comparator)
   end
 
-  def pre_pmerge(astart, aend, bstart, bend, p, r, comparator)
+  def pre_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
     common_conditions(astart, aend, bstart, bend, p, r)
-    check_comparator(comparator)
+    check_comparator(&comparator)
   end
 
-  def post_pmerge(astart, aend, bstart, bend, p, r, comparator)
-    check_order(p, r, comparator)
+  def post_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
+    check_collection(collection)
+    check_order(p, r, &comparator)
   end
 
 end
