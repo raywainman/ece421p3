@@ -175,10 +175,10 @@ module MergesortContracts
   def pre_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
     common_conditions(astart, aend, bstart, bend, p, r)
     check_comparator(&comparator)
+    check_collection(collection)
   end
 
   def post_pmerge(collection,astart, aend, bstart, bend, p, r, &comparator)
-    check_collection(collection)
     check_order(p, r, &comparator)
   end
   
