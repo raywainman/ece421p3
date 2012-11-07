@@ -269,11 +269,9 @@ end
 
 def mergex(collection, left, right, p, r)
 
-  puts "Normal Merge"
-
-  #puts left.to_a
-  #puts right.to_a
-  
+  #puts "Normal Merge"
+  #pre_normal_merge()
+    
   (p..r).each() do |i|
 
     if(left.length == 0)
@@ -292,15 +290,13 @@ def mergex(collection, left, right, p, r)
         a = right.shift
       end
 
-      #puts a
-      #puts i
-      #puts "collection_pre: " + collection.to_s
       collection[i] = a
-      #puts "collection_post: " + collection.to_s
-
+      
     end
 
   end
+  #end of "each" loop
+  #post_normal_merge(collection,left,right,p,r)
 
 end
 

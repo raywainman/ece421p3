@@ -179,5 +179,31 @@ module Mergesort_contracts
   def post_pmerge(astart, aend, bstart, bend, p, r, comparator)
     check_order(p, r, comparator)
   end
-
+  
+  #Contracts for the normal merge sort. To be used when threaded merge fails.
+  def pre_normal_merge(collection, left, right, p, r)
+    #Type checking
+    assert left.is_a?(Array), "Parameter 'left' not an array."
+    assert right.is_a?(Array), "Parameter 'right' not an array."
+    assert collection.is_a?(Array), "First parameter must be an array."
+    assert p.is_a?(Fixnum), "Parameter p must be a number."
+    assert r.is_a?(Fixnum), "Parameter r must be a number."
+    #Method checking
+    assert collection.respond_to?(:[]), "First parameter needs to be able to access its values."
+    assert left.respond_to?(:[]), "Second parameter needs to be able to access its values."
+    assert right.respond_to?(:[]), "Third parameter needs to be able to access its values."
+    assert left.respond_to?(:shift), "Shift method needed for second parameter."
+    assert right.respond_to?(:shift), "Shift method needed for third parameter."
+    #Value checking
+    assert p <= r, "Index conflict. Left index must be <= right index."
+  end
+  
+  #Postconditions after using the "normal" merge sort
+  def post_normal_merge(collection,left,right,p,r)
+    #All values must be sorted according to the comparator
+    (p..r-1).each { |i|
+       assert comparator(collection[i],collection[i+1]), "Out-of-order values found in sorted section of the array after merging."
+    }
+  end
+    
 end
