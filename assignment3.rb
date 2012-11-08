@@ -7,7 +7,10 @@ class Assignment3
   def initialize(x) 
     @collection = []
     
-    for i in 3..x do       
+    for i in 0..x do   
+      
+      puts "Sorting #{i}..."
+          
      @collection.clear()                
       for j in 0..i do
         @collection << (1 + rand(1000000)).to_i
@@ -19,8 +22,8 @@ class Assignment3
          
         control = control.sort(){ |i, j| i <=> j }
           
-        puts "mysort: " + self.to_a.to_s
-        puts "sort: " + control.to_a.to_s
+       #puts "mysort: " + self.to_a.to_s
+        #puts "sort: " + control.to_a.to_s
           
         if(control.to_a != self.to_a)
           raise "Sort Doesn't match default sort alg."

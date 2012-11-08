@@ -63,21 +63,21 @@ module MergeSort
 
       mid = ((min+max)/2).floor
 
-      if(mid+1 == b.length-1)
-        result = @@NO_POSITION_FOUND
-        break;
-      end
-
+#      if(mid+1 == b.length-1)
+#        result = @@NO_POSITION_FOUND
+#        break;
+#      end
+      
       if(comparator.call(b[mid],center) == 1)
-        min = mid + 1;
-      elsif (comparator.call(b[mid+1],center)==-1)
         max = mid - 1;
+      elsif (comparator.call(b[mid+1],center)==-1)
+        min = mid + 1;
       else
         result = mid;
         break;
       end
     end
-
+    
     post_binary_search(a, b, center, result)
     result
   end
@@ -156,8 +156,17 @@ module MergeSort
       position = @@NO_POSITION_FOUND
       @lock.synchronize do
       position = binary_search(a_col, b_col, a_col[a_mid], &comparator)
-end
+      end
+      
+      
+      
       if(position == @@NO_POSITION_FOUND)
+        
+#        puts "Position: " + position.to_s
+#        puts "mid: " + a_col[a_mid].to_s
+#        puts "b: " + b_col.to_s
+#        puts "a: " + a_col.to_s
+#        
         merge(collection, a_col, b_col, p, r, &comparator)
         return
       end

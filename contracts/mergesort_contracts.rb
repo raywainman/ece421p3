@@ -57,9 +57,7 @@ module MergesortContracts
 
   end
 
-  def check_collection(collection)
-    
-    
+  def check_collection(collection)   
     assert(!collection.nil?,"Collection cannot be nil")
     assert(collection.respond_to?("clone"), "Object including mergesort module must respond to clone")
     assert(collection.respond_to?("[]"), "Object including mergesort module must respond to []")
@@ -147,10 +145,6 @@ module MergesortContracts
       next_val = collection[i+1]
 
       comparision = comparator.call(current_val, next_val)
-      
-      if(comparision != expected_sort)
-        puts "Boom: "+collection[p..r].to_s
-      end
       
       assert(comparision == expected_sort || comparision==0, "Invalid sorting detected.")
 
