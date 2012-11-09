@@ -25,11 +25,9 @@ module MergesortContracts
       assert(comparator.call(a,a) == 0, "Comparision block must return 0 for the same element")
       assert(comparator.call(b,b) == 0, "Comparision block must return 0 for the same element")
     end
-
   end
 
   def check_comparator(&comparator)
-
     assert(block_given?, "Comparator block must be provided")
     assert(comparator.arity == 2, "Provided comparision block must take two parameters")
 
@@ -52,9 +50,7 @@ module MergesortContracts
       test_value1 = self[1]
       test_value2 = self[2]
       check_comparator_values(test_value1, test_value2, &comparator)
-
     end
-
   end
 
   def check_collection(collection)   
@@ -68,37 +64,29 @@ module MergesortContracts
   end
 
   def pre_sort!(timeout, &comparator)
-
     check_collection(self)
     check_timeout(timeout)
     check_comparator(&comparator)
-
   end
 
   def post_sort!(timeout, &comparator)
-    
     #checking sort is consistent
     last_element = self.length - 1
     
     expected_sort = comparator.call(self[0], self[last_element]) 
     
     self.each_with_index() do |item, index|
-      
       if(index < last_element)
         current_val = self[index]
         next_val = self[index+1]
         
       comparision = comparator.call(current_val, next_val)
       assert(comparision == expected_sort || comparision==0, "Invalid sorting detected.")
-        
       end
-
-      
     end
   end
 
   def common_conditions(a_start, a_end, b_start, b_end, p, r)
-
     common_subcollection_a(a_start, a_end)
     common_subcollection_b(b_start, b_end)
     common_subcollection(p, r)
@@ -111,7 +99,6 @@ module MergesortContracts
     
     #no overlap -  e1 <= s2 or e2 <= s1
     assert(a_end <= b_start || b_end <= a_start, "No Overlap allowed between sub collections a & b")
-    
 
     a_length = a_start + a_end + 1
     b_length = b_start + b_end + 1
@@ -136,7 +123,6 @@ module MergesortContracts
   end
 
   def check_order(collection, p, r, &comparator)
-
     #checking sort is consistent
     expected_sort = comparator.call(collection[p], collection[r]) 
     
@@ -147,7 +133,6 @@ module MergesortContracts
       comparision = comparator.call(current_val, next_val)
       
       assert(comparision == expected_sort || comparision==0, "Invalid sorting detected.")
-
     end
   end
 

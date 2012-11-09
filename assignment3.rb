@@ -23,8 +23,8 @@ class SomeCollection
   def initialize(x)
     @collection = []
 
-    puts "Generating 500 random elements..."
-    for j in 0..500 do
+    puts "Generating 1000 random elements..."
+    for j in 0..1000 do
       @collection << (1 + rand(1000000)).to_i
     end
 
