@@ -1,5 +1,12 @@
 require 'test/unit'
 
+# ECE 421 - Assignment #3
+# Group 1
+# Author:: Kenneth Rodas (krodas@ualberta.ca)
+# Author:: Raymond Wainman (wainman@uablerta.ca)
+# Author:: Dustin Durand (dddurand@ualberta.ca)
+
+# Contracts for the MergeSort module
 module MergesortContracts
 
   include Test::Unit::Assertions

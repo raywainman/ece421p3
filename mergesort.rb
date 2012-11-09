@@ -1,5 +1,4 @@
 require_relative("./contracts/mergesort_contracts.rb")
-require "monitor"
 
 # ECE 421 - Assignment #3
 # Group 1

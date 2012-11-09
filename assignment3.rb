@@ -31,7 +31,7 @@ class SomeCollection
     control = self.clone
 
     puts "Sorting the random elements using default comparator..."
-    self.sort!() { |i, j| i <=> j  }
+    self.sort!(1) { |i, j| i <=> j  }
 
     puts "Checking against control"
     control = control.sort(){ |i, j| i <=> j }
