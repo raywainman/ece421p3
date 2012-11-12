@@ -1,4 +1,6 @@
 require_relative("./contracts/mergesort_contracts.rb")
+require_relative("./sorting_thread.rb")
+require "timeout"
 
 # ECE 421 - Assignment #3
 # Group 1
@@ -12,14 +14,38 @@ require_relative("./contracts/mergesort_contracts.rb")
 module MergeSort
 
   include MergesortContracts
+  # returns a sorted version of the data structure
+  def sort(timeout = default_time(), &comparator)
+    copy = self.clone
+    return copy.sort!(timeout, &comparator)
+  end
+
   # sorts the data structure, WARNING: modifies the current data structure
   def sort!(timeout = default_time(), &comparator)
     pre_sort!(timeout, &comparator)
-
-    collection_start = 0
-    collection_end = self.length - 1
-    psort(collection_start, collection_end, &comparator)
-
+    Thread.current.priority = 100
+    copy = self.clone # keep a copy incase something goes wrong
+    begin
+      collection_start = 0
+      collection_end = self.length - 1
+      Timeout::timeout(timeout) {
+        psort(collection_start, collection_end, &comparator)
+      }
+    rescue Timeout::Error
+      # Clean up all children
+      Thread.list.each{ |thread|
+        if thread.respond_to?("id")
+          if thread.id == "mergesort"
+            thread.kill
+          end
+        end
+      }
+      # Restore the original array
+      copy.each_with_index{ |element, index|
+        self[index] = element
+      }
+      raise "The sorting operation has timed out"
+    end
     post_sort!(timeout, &comparator)
   end
 
@@ -31,11 +57,11 @@ module MergeSort
     collection_mid = ((collection_start+collection_end)/2).floor()
 
     if(collection_start < collection_end)
-      left = Thread.new do
+      left = SortingThread.new("mergesort") do
         psort(collection_start, collection_mid, &comparator)
       end
 
-      right = Thread.new do
+      right = SortingThread.new("mergesort") do
         psort(collection_mid+1, collection_end, &comparator)
       end
 
@@ -44,6 +70,7 @@ module MergeSort
 
       pmerge(self, collection_start, collection_mid, collection_mid+1,
       collection_end, collection_start, collection_end, &comparator)
+
     end
 
     post_psort(self, collection_start, collection_end, &comparator)
@@ -118,7 +145,7 @@ module MergeSort
     m = b_col.length-1
 
     if(m > l)
-      submerge = Thread.new do
+      submerge = SortingThread.new("mergesort") do
         pmerge(collection, b_start, b_end, a_start, a_end, p, r, &comparator)
       end
       submerge.join()
@@ -147,12 +174,12 @@ module MergeSort
       lastpos = (a_mid) + (position) + 1
 
       collection2 = collection.clone
-      left = Thread.new do
+      left = SortingThread.new("mergesort") do
         pmerge(collection2, a_start, a_start+a_mid, b_start, b_start+position, p, p+lastpos, &comparator)
       end
 
       collection3 = collection.clone
-      right = Thread.new do
+      right = SortingThread.new("mergesort") do
         pmerge(collection3, a_start+a_mid+1, a_end, b_start+position + 1, b_end, p+ lastpos + 1, r, &comparator)
       end
 
