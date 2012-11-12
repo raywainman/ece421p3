@@ -186,7 +186,7 @@ module MergeSort
       left.join()
       right.join()
 
-      #Ugly hack to sync up dup collections to main one
+      #sync up dup collections to main one
       (p..p+ lastpos).each() do |i|
         collection[i] = collection2[i]
       end
@@ -199,8 +199,6 @@ module MergeSort
     post_pmerge(collection, a_start, a_end, b_start, b_end, p, r, &comparator)
   end
 
-  #Find a better relation to time: n*log(n)?
-  # But threads will slow it down
   def default_time()
     if(self.length <= 0)
       return 1 * self.length * self.length
